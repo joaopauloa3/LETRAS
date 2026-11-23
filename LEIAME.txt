@@ -1,0 +1,12 @@
+LETRAS - app de letras com rolagem automatica
+
+1) Suba TODOS os arquivos desta pasta para um site com HTTPS
+   (GitHub Pages, Netlify, Cloudflare Pages). Nao renomeie nada.
+2) No iPhone, abra o endereco no Safari.
+3) Toque em Compartilhar > Adicionar a Tela de Inicio.
+4) Abra pelo icone novo e cadastre as musicas la dentro
+   (o PWA tem armazenamento separado do Safari).
+
+Comandos na letra (linha sozinha):
+  /10  /20  /solo15   pausa de X segundos e continua sozinho
+  [Refrao]            marcador de secao
