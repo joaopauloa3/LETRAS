@@ -68,7 +68,10 @@ button{cursor:pointer;border:0;background:none}
 .row .t i{font-style:normal;font-size:14px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .edit{padding:0 14px;border-radius:14px;border:1px solid var(--line);background:var(--panel);
   color:var(--dim);font-size:14px;font-weight:600}
-#empty{margin:40px 24px;color:var(--dim);font-size:17px;line-height:1.5}
+#empty,#noresult{margin:40px 24px;color:var(--dim);font-size:17px;line-height:1.5}
+.search{margin:0 14px 10px}
+.search input{width:100%;min-height:48px;padding:0 14px;border-radius:12px;border:1px solid var(--line);
+  background:var(--panel);color:var(--ink);font-size:17px;-webkit-appearance:none;appearance:none}
 .tools{margin:18px 14px 40px;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--panel)}
 .tools h2{margin:0 0 4px;font-size:16px}
 .tools p{margin:0 0 12px;font-size:14px;color:var(--dim);line-height:1.45}
@@ -149,9 +152,13 @@ button{cursor:pointer;border:0;background:none}
     <button class="btn primary" id="addBtn">Nova música</button>
   </div>
   <p class="sub" id="count"></p>
+  <div class="search" id="search">
+    <input type="search" id="q" placeholder="Buscar música ou trecho da letra" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Buscar música">
+  </div>
   <p id="warn" hidden>Este navegador não está salvando os dados. Abra o arquivo no seu site hospedado para o repertório ficar guardado.</p>
   <ol id="songs"></ol>
   <div id="empty" hidden>Seu repertório está vazio. Toque em <b>Nova música</b> e cole a letra.</div>
+  <div id="noresult" hidden>Nenhuma música encontrada.</div>
 
   <section class="tools">
     <h2>Backup</h2>
@@ -330,13 +337,19 @@ if('serviceWorker' in navigator && location.protocol.indexOf('http') === 0){
 }
 
 /* ================= lista ================= */
+function norm(s){ return (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
+
 function renderList(){
   var ol = $('songs'); ol.innerHTML = '';
   var n = state.songs.length;
-  $('count').textContent = n === 0 ? '' : (n === 1 ? '1 música' : n + ' músicas');
+  var q = norm($('q').value.trim());
+  var shown = 0;
+  $('search').hidden = n === 0;
   $('empty').hidden = n !== 0;
   $('warn').hidden = persistOK;
   state.songs.forEach(function(s, i){
+    if(q && norm(s.title + ' ' + (s.artist || '') + ' ' + s.lyrics).indexOf(q) < 0) return;
+    shown++;
     var li = document.createElement('li');
     var row = document.createElement('button');
     row.className = 'row'; row.type = 'button';
@@ -354,7 +367,11 @@ function renderList(){
     li.appendChild(row); li.appendChild(ed);
     ol.appendChild(li);
   });
+  $('count').textContent = n === 0 ? '' :
+    (q ? shown + ' de ' + n + (n === 1 ? ' música' : ' músicas') : (n === 1 ? '1 música' : n + ' músicas'));
+  $('noresult').hidden = !(n > 0 && shown === 0);
 }
+$('q').addEventListener('input', function(){ renderList(); });
 $('songs').addEventListener('click', function(e){
   var p = e.target.closest('[data-play]');
   var ed = e.target.closest('[data-edit]');
